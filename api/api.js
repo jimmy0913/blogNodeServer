@@ -49,10 +49,67 @@ module.exports = {
     });
   },
 
+
+  'getArticleList':(req,res) => {
+    let limit = parseInt(req.query.limit) || 10;
+    let curPage = parseInt(req.query.curPage) || 1;
+
+    let start = (curPage-1) * limit;
+    let end = limit;
+
+    const sql = 'select * from article_list limit ' + start + ',' + end ;
+    const sum = 'select count(*) from article_list';
+
+    connection.query(sql,(err,result)=>{
+        if(err){
+          var ret = errMsg(err.message);
+        }
+
+        console.log(result);
+        res.json({
+          'status':{
+            'code': 200,
+            'message': "success"
+          },
+          'data':{
+            'result':result,
+            'pagination':{
+              'limit': limit,
+              'curPage': curPage,
+            }
+          }
+        });
+    })
+  },
+
+  'getAllCategory': (req, res) => {
+    const sql = 'SELECT * FROM category_list';
+
+    connection.query(sql, (err, result) => {
+      if (err) {
+        var ret = errMsg(err.message);
+        return res.json(ret);
+      }
+
+      console.log(result);
+      
+      res.json({
+        'status':{
+          'code': 200,
+          'message': "success"
+        },
+        'data':result
+      });
+
+    });
+  },
+
+
+
   //根据name搜索书籍
-  'search_book_name':(req,res)=>{
-    const sql = 'SELECT * FROM books_list where book_name like ?';
-    const params = '%' + (req.params.book_name || '') + '%';
+  'getArticleByCategoryId':(req,res)=>{
+    const sql = 'SELECT * FROM article_list where category_id like ?';
+    const params = '%' + (req.params.id || '') + '%';
 
     connection.query(sql, params, (err, result) => {
       if (err) {
@@ -72,6 +129,8 @@ module.exports = {
 
     });
   },
+
+  //
 
   add_book: (req,res)=>{
       const sql = 'INSERT INTO books_list(book_name,author_name,publish_time) VALUES(?,?,?)';
